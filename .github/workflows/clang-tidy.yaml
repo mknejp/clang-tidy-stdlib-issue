@@ -1,0 +1,43 @@
+name: clang-tidy stdlib issue
+
+on:
+  push:
+
+jobs:
+  clang-tidy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      # In production we compile with GCC 11. libstdc++ contains <source_location>, libc++ does not.
+      - run: |
+          sudo apt install g++-11
+          sudo apt update
+
+      - run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 14 all
+
+      - run: clang-tidy-14 --version
+
+      - run: cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_COMPILER=clang++-14
+
+      # Expected error: <source_location> not found
+      # Not yet implemented in LLVM's libc++
+      # This means clang is picking its own libc++ which is expected
+      - run: cmake -B build
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: compile_commands.json
+          path: build/compile_commands.json
+
+      # Expected error: same as above
+      # Actual error: source_location not found in namespace std
+      # This means clang-tidy is picking libstdc++ where <source_location> exists
+      # but the type is only defined if __builtin_source_location is present which it is on clang.
+      # So the question is: why does clang-tidy use a different stdlib than clang?
+      - run: |
+          clang-tidy-14 -p build --dump-config
+          clang-tidy-14 -p build ./main.cpp
