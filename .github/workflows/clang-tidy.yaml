@@ -21,7 +21,7 @@ jobs:
 
       - run: clang-tidy-14 --version
 
-      - run: cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_COMPILER=clang++-14
+      - run: cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_COMPILER=g++-11
 
       # Expected error: <source_location> not found
       # Not yet implemented in LLVM's libc++
