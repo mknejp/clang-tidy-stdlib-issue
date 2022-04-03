@@ -31,7 +31,7 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: compile_commands.json
+          name: ${{ matrix.cpp }}-compile_commands.json
           path: build/compile_commands.json
 
       # Error: namespace std not found
