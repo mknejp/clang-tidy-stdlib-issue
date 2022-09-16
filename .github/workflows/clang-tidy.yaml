@@ -9,11 +9,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cpp: [clang++-14, g++-11]
+        cpp: [clang++-15, g++-11]
     steps:
       - uses: actions/checkout@v2
 
-      # In production we compile with GCC 11. libstdc++ contains <source_location>, libc++ does not.
+      # In production we compile with GCC 11. libstdc++ contains <source_location> (or some builtin), libc++ does not.
       - run: |
           sudo apt install g++-11
           sudo apt update
@@ -21,9 +21,9 @@ jobs:
       - run: |
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
-          sudo ./llvm.sh 14 all
+          sudo ./llvm.sh 15 all
 
-      - run: clang-tidy-14 --version
+      - run: clang-tidy-15 --version
 
       - run: cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_COMPILER=${{ matrix.cpp }}
 
@@ -40,5 +40,5 @@ jobs:
       # libstdc++ conditionally defines std::source_location only if __builtin_source_location exists
       # which it does not when building with clang/clang-tidy.
       - run: |
-          clang-tidy-14 -p build --dump-config
-          clang-tidy-14 -p build ./main.cpp
+          clang-tidy-15 -p build --dump-config
+          clang-tidy-15 -p build ./main.cpp
